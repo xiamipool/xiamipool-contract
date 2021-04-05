@@ -8,11 +8,11 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v2.5.0/contr
 //import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v2.5.0/contracts/token/ERC721/IERC721.sol';
 import "../interface/IERC721.sol";
 
-contract MaxLevelPool is Governance {
+contract MaxLevelReward is Governance {
     using SafeMath for uint256;
 
-    uint256 public DURATION = 1 days;
-    uint256 public initReward = 100 * 1e18;
+    uint256 public DURATION = 30 minutes;
+    uint256 public initReward = 10 *1e18;
     uint256 public startTime = now + 365 days;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
@@ -95,7 +95,7 @@ contract MaxLevelPool is Governance {
             totalPower = totalPower.add(stakingPower);
         }
 
-        nft.transfer(address(this),_nftId);
+        nft.transferFrom(msg.sender,address(this),_nftId);
         lastStakedTime[msg.sender] = now;
         emit StakedNFT(msg.sender, _nftId);
 

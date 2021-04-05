@@ -7,12 +7,14 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v2.5.0/contr
 import "../interface/IERC20.sol";
 
 import "../library/LPTokenWrapper.sol";
+//import "../library/SafeERC20.sol";
 
 contract LPReward is LPTokenWrapper{
 
-    IERC20 public _XMPT = IERC20(0x1E2FC5E6D3C954c6c2E7B74CE65F920750CA5a64);
+    //IERC20 public _XMPT = IERC20(0x1E2FC5E6D3C954c6c2E7B74CE65F920750CA5a64);
+    IERC20 public _XMPT = IERC20(0x4A2d7984A2c35780E431675053Ba93Af674e9520);
+
     address public _teamWallet = 0x3D0a845C5ef9741De999FC068f70E2048A489F2b;
-    address public _rewardPool = 0xEA6dEc98e137a87F78495a8386f7A137408f7722;
 
     uint256 public constant DURATION = 7 days;
 
@@ -24,7 +26,6 @@ contract LPReward is LPTokenWrapper{
     uint256 public _rewardPerTokenStored;
 
     uint256 public _teamRewardRate = 500;
-    uint256 public _poolRewardRate = 1000;
     uint256 public _baseRate = 10000;
     uint256 public _punishTime = 3 days;
 
@@ -61,10 +62,6 @@ contract LPReward is LPTokenWrapper{
         _teamRewardRate = teamRewardRate;
     }
 
-    function setPoolRewardRate( uint256  poolRewardRate ) public onlyGovernance{
-        _poolRewardRate = poolRewardRate;
-    }
-
     function setWithDrawPunishTime( uint256  punishTime ) public onlyGovernance{
         _punishTime = punishTime;
     }
@@ -82,7 +79,6 @@ contract LPReward is LPTokenWrapper{
             lastTimeRewardApplicable()
             .sub(_lastUpdateTime)
             .mul(_rewardRate)
-            .mul(1e18)
             .div(totalPower())
         );
     }
@@ -91,7 +87,6 @@ contract LPReward is LPTokenWrapper{
         return
         balanceOfPower(account)
         .mul(rewardPerToken().sub(_userRewardPerTokenPaid[account]))
-        .div(1e18)
         .add(_rewards[account]);
     }
 
@@ -135,7 +130,7 @@ contract LPReward is LPTokenWrapper{
             if(teamReward>0){
                 _XMPT.transfer(_teamWallet, teamReward);
             }
-            uint256 leftReward = reward.sub(fee).sub(teamReward);
+            uint256 leftReward = reward.sub(teamReward);
 
             if(leftReward>0){
                 _XMPT.transfer(msg.sender, leftReward );
@@ -149,7 +144,7 @@ contract LPReward is LPTokenWrapper{
         if (block.timestamp >= _periodFinish) {
             _initReward = _initReward.mul(50).div(100);
 
-            _XMPT.mint(address(this), _initReward);
+            //_XMPT.mint(address(this), _initReward);
 
             _rewardRate = _initReward.div(DURATION);
             _periodFinish = block.timestamp.add(DURATION);
@@ -175,7 +170,7 @@ contract LPReward is LPTokenWrapper{
         _startTime = startTime;
 
         _rewardRate = _initReward.div(DURATION);
-        _XMPT.mint(address(this), _initReward);
+        //_XMPT.mint(address(this), _initReward);
 
         _lastUpdateTime = _startTime;
         _periodFinish = _startTime.add(DURATION);
